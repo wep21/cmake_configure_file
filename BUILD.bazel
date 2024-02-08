@@ -1,0 +1,5 @@
+py_binary(
+    name = "cmake_configure_file",
+    srcs = ["cmake_configure_file.py"],
+    visibility = ["//visibility:public"],
+)
