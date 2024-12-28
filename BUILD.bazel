@@ -1,3 +1,5 @@
+load("@python_versions//3.12:defs.bzl", "py_binary")
+
 py_binary(
     name = "cmake_configure_file",
     srcs = ["cmake_configure_file.py"],
