@@ -156,9 +156,6 @@ def _setup_definitions(args):
         else:
             result[item] = '1'
 
-    for item in args.undefines:
-        result[item] = None
-
     cmakelist_keys = set()
     for filename in args.cmakelists:
         with open(filename, 'r') as cmakelist:
@@ -166,6 +163,9 @@ def _setup_definitions(args):
                 definition = _extract_definition(line, result)
                 result.update(definition)
                 cmakelist_keys.update(definition.keys())
+
+    for item in args.undefines:
+        result[item] = None
 
     return result, cmakelist_keys
 
