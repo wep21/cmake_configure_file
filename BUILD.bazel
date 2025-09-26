@@ -1,4 +1,24 @@
 load("@python_versions//3.12:defs.bzl", "py_binary")
+load("@rules_license//rules:license.bzl", "license")
+
+exports_files([
+    "LICENSE",
+])
+
+package(
+    default_applicable_licenses = [":license"],
+    default_visibility = ["//visibility:public"],
+)
+
+license(
+    name = "license",
+    license_kinds = ["@rules_license//licenses/spdx:BSD-3-Clause"],
+    license_text = "LICENSE",
+    package_name = "cmake_configure_file",
+    package_url = "https://github.com/wep21/cmake_configure_file",
+    package_version = "0.1.4",
+    visibility = ["//visibility:public"],
+)
 
 py_binary(
     name = "cmake_configure_file",
