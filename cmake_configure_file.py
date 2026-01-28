@@ -15,7 +15,7 @@ import sys
 from collections import OrderedDict
 
 # Looks like "#cmakedefine VAR ..." or "#cmakedefine01 VAR".
-_cmakedefine = re.compile(r'^(\s*)#cmakedefine(01)? ([^ \r\n]+)(.*?)([\r\n]+)')
+_cmakedefine = re.compile(r'^(\s*)#([ \t]*)cmakedefine(01)? ([^ \r\n]+)(.*?)([\r\n]+)')
 
 # Looks like "@VAR@" or "${VAR}".
 _varsubst = re.compile(r'^(.*?)(@[^ ]+?@|\$\{[^ ]+?\})(.*)([\r\n]*)')
@@ -49,7 +49,7 @@ def _transform_cmake(*, line, definitions, strict):
     # Replace define statements.
     match = _cmakedefine.match(line)
     if match:
-        blank, maybe01, var, rest, newline = match.groups()
+        blank, blank_hash, maybe01, var, rest, newline = match.groups()
         if var not in definitions:
             defined = False
             if strict:
@@ -58,10 +58,10 @@ def _transform_cmake(*, line, definitions, strict):
             defined = definitions[var] is not None
             used_vars.add(var)
         if maybe01:
-            line = blank + '#define ' + var + [' 0', ' 1'][defined] + newline
+            line = blank + '#' + blank_hash + 'define ' + var + [' 0', ' 1'][defined] + newline
             return line, used_vars
         elif defined:
-            line = blank + '#define ' + var + rest + newline
+            line = blank + '#' + blank_hash + 'define ' + var + rest + newline
         else:
             line = blank + '/* #undef ' + var + ' */' + newline
             return line, used_vars
