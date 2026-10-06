@@ -94,8 +94,9 @@ def _transform_cmake(*, line, definitions, strict):
     return line, used_vars
 
 
-# Looks like "#undef VAR".
-_autoconf_undef = re.compile(r'^(\s*)#undef +([^ \r\n]+)([\r\n]+)')
+# Looks like "#undef VAR", or "# undef VAR" as autoconf writes it inside an
+# #ifndef (AC_USE_SYSTEM_EXTENSIONS does, for _GNU_SOURCE and others).
+_autoconf_undef = re.compile(r'^(\s*)#([ \t]*)undef[ \t]+([^ \r\n]+)([\r\n]+)')
 
 
 # Transform a source code line using autoconf format.
@@ -104,12 +105,12 @@ def _transform_autoconf(*, line, definitions, strict):
     used_vars = set()
     match = _autoconf_undef.match(line)
     if match:
-        blank, var, newline = match.groups()
+        blank, blank_hash, var, newline = match.groups()
         if var in definitions:
             used_vars.add(var)
             value = definitions[var]
             if value is not None:
-                line = blank + f'#define {var} {value}' + newline
+                line = blank + f'#{blank_hash}define {var} {value}' + newline
             else:
                 line = blank + f'/* undef {var} */' + newline
         elif strict:
