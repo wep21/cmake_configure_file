@@ -25,6 +25,10 @@ def _cmake_configure_file_impl(ctx):
     undefines = [_expand(undefine, ctx) for undefine in ctx.attr.undefines]
     arguments.add_all(undefines, before_each = "-U")
     arguments.add_all(ctx.files.cmakelists, before_each = "--cmakelists")
+    if ctx.attr.autoconf:
+        arguments.add("--autoconf")
+    if ctx.attr.strict:
+        arguments.add("--strict")
     ctx.actions.run(
         inputs = [ctx.file.src] + ctx.files.cmakelists,
         outputs = [ctx.outputs.out],
@@ -45,6 +49,8 @@ _cmake_configure_file_gen = rule(
         "defines": attr.string_list(),
         "undefines": attr.string_list(),
         "cmakelists": attr.label_list(allow_files = True),
+        "autoconf": attr.bool(default = False),
+        "strict": attr.bool(default = False),
         "cmake_configure_file_py": attr.label(
             cfg = "exec",
             executable = True,
@@ -67,6 +73,8 @@ def cmake_configure_file(
         defines = None,
         undefines = None,
         cmakelists = None,
+        autoconf = False,
+        strict = False,
         **kwargs):
     """Creates a rule to generate an out= file from a src= file, using CMake's
     configure_file substitution semantics.  This implementation is incomplete,
@@ -78,6 +86,10 @@ def cmake_configure_file(
     contain statements of the form "set(FOO_MAJOR_VERSION 1)" and similar.
     Variables that are known substitutions but which should be undefined can be
     passed as undefines= strings.
+    When autoconf is True, src is an autoheader template instead: each
+    "#undef VAR" line becomes "#define VAR VALUE" for a VAR in defines=, and is
+    commented out otherwise. When strict is True, every such VAR needs a
+    decision in defines= or undefines=.
     See cmake_configure_file.py for our implementation of the configure_file
     substitution rules.
     The CMake documentation of the configure_file macro is:
@@ -90,6 +102,8 @@ def cmake_configure_file(
         defines = defines,
         undefines = undefines,
         cmakelists = cmakelists,
+        autoconf = autoconf,
+        strict = strict,
         env = {},
         **kwargs
     )
